@@ -86,7 +86,7 @@ with SB(uc=True, test=True, ad_block=True, pls="none") as sb:
 
     spreadsheet_id = '1HShysq6qscXxQJHmf9uY3U_wKI1qgmuD54qw9EqXRsE'
     sheet_name = 'Sheet1'
-    row_to_append = ['value1', 'value2', 'value3']
+    row_to_append = [name, link, subscribers, video_views, rankings]
     append_row_to_sheet_from_secret(spreadsheet_id, sheet_name, row_to_append)
     
     for i in range(17):
