@@ -80,6 +80,8 @@ jobs:
     - name: Run python my_socialblade.py --debug
       run: |
         python my_socialblade.py --debug
+      env:
+        GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
     # - name: Run python raw_nike.py --debug
     #   run: |
     #     python raw_nike.py --debug
