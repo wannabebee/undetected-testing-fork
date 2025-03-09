@@ -87,7 +87,9 @@ with SB(uc=True, test=True, ad_block=True, pls="none") as sb:
     spreadsheet_id = '1HShysq6qscXxQJHmf9uY3U_wKI1qgmuD54qw9EqXRsE'
     sheet_name = 'Sheet1'
     row_to_append = [name, link, subscribers, video_views, rankings]
+    print("calling the append_row_func")
     append_row_to_sheet_from_secret(spreadsheet_id, sheet_name, row_to_append)
+    print("append func finished")
     
     for i in range(17):
         sb.cdp.scroll_down(6)
