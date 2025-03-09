@@ -1,13 +1,13 @@
 name: CI build 3
 on:
-  schedule:
-    - cron: "38 * * * *"
+  # schedule:
+  #   - cron: "38 * * * *"
   push:
     branches: [ master ]
   pull_request:
     branches:
-  workflow_dispatch:
-    branches:
+  # workflow_dispatch:
+    # branches:
 
 jobs:
   build:
@@ -46,6 +46,7 @@ jobs:
         pip install -r requirements.txt
         pip install --upgrade pyautogui
         pip install --upgrade python-xlib
+        pip install gspread google-auth-oauthlib
     - name: Lint with flake8
       run: |
         pip install flake8
@@ -79,9 +80,9 @@ jobs:
     - name: Run python my_socialblade.py --debug
       run: |
         python my_socialblade.py --debug
-    - name: Run python raw_nike.py --debug
-      run: |
-        python raw_nike.py --debug
-    - name: Run python raw_priceline.py --debug
-      run: |
-        python raw_priceline.py --debug
+    # - name: Run python raw_nike.py --debug
+    #   run: |
+    #     python raw_nike.py --debug
+    # - name: Run python raw_priceline.py --debug
+    #   run: |
+    #     python raw_priceline.py --debug
