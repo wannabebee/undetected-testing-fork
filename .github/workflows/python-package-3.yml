@@ -81,7 +81,7 @@ jobs:
       run: |
         python raw_socialblade.py --debug
       env:
-        GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        GSHEETS_API_KEY: ${{ secrets.GSHEETS_API_KEY }}
     # - name: Run python raw_nike.py --debug
     #   run: |
     #     python raw_nike.py --debug
