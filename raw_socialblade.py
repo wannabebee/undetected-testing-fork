@@ -1,49 +1,36 @@
 """Bypass bot-detection to view SocialBlade ranks for YouTube"""
 from seleniumbase import SB
 
-import gspread
-from google.oauth2.service_account import Credentials
-import os
-import tempfile
-import json
+import requests
+import csv
+def upload_csv(api_key, file_path, file_name, parent_folder_id=None):
+    """Uploads a CSV file to Google Drive using an API key."""
 
-def append_row_to_sheet_from_secret(spreadsheet_id, sheet_name, row_data, secret_name='GOOGLE_SERVICE_ACCOUNT_JSON'):
-    """
-    Appends a row to a Google Sheet using credentials from a GitHub secret.
-    """
-    try:
-        # Get the JSON content from the GitHub secret.
-        service_account_json_content = os.environ.get(secret_name)
-        if not service_account_json_content:
-            raise ValueError(f"GitHub secret '{secret_name}' not found.")
+    url = "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart"
 
-        # Create a temporary file to store the JSON content.
-        with tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.json') as temp_file:
-            temp_file.write(service_account_json_content)
-            temp_file_path = temp_file.name
+    headers = {
+        "Authorization": f"Bearer {api_key}" #Technically, API keys don't use bearer tokens, but this is how google drive API expects it.
+    }
 
-        # Authenticate with Google Sheets API.
-        scope = ['https://spreadsheets.google.com/feeds',
-                 'https://www.googleapis.com/auth/drive']
-        creds = Credentials.from_service_account_file(temp_file_path, scopes=scope)
-        client = gspread.authorize(creds)
+    metadata = {
+        "name": file_name,
+        "mimeType": "text/csv"
+    }
 
-        # Open the Google Sheet and worksheet.
-        sheet = client.open_by_key(spreadsheet_id)
-        worksheet = sheet.worksheet(sheet_name)
+    if parent_folder_id:
+        metadata["parents"] = [parent_folder_id]
 
-        # Append the row to the worksheet.
-        worksheet.append_row(row_data)
+    files = {
+        "metadata": (None, str(metadata), "application/json; charset=UTF-8"),
+        "file": (file_name, open(file_path, "rb"), "text/csv"),
+    }
 
-        print(f"Row appended successfully to '{sheet_name}' in spreadsheet '{spreadsheet_id}'.")
+    response = requests.post(url, headers=headers, files=files)
 
-    except Exception as e:
-        print(f"An error occurred: {e}")
-    finally:
-        # Clean up the temporary file.
-        if 'temp_file_path' in locals() and os.path.exists(temp_file_path):
-            os.remove(temp_file_path)
-
+    if response.status_code == 200:
+        print("CSV file uploaded successfully.")
+    else:
+        print(f"Error uploading CSV: {response.status_code}, {response.text}")
 
 
 with SB(uc=True, test=True, ad_block=True, pls="none") as sb:
@@ -84,12 +71,25 @@ with SB(uc=True, test=True, ad_block=True, pls="none") as sb:
         if len(row.strip()) > 8:
             print("-->  " + row.strip())
 
-    spreadsheet_id = '1HShysq6qscXxQJHmf9uY3U_wKI1qgmuD54qw9EqXRsE'
-    sheet_name = 'Sheet1'
-    row_to_append = [name, link, subscribers, video_views, rankings]
-    print("calling the append_row_func")
-    append_row_to_sheet_from_secret(spreadsheet_id, sheet_name, row_to_append)
-    print("append func finished")
+    csv_file_path = "my_data.csv"
+    print("writing csv")
+    with open(csv_file_path, 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+    
+        # Write the header row (keys of the dictionary).
+        header = [name, link, subscribers, video_views, rankings] #list(data_dict.keys())
+        writer.writerow(header)
+    
+        # Write the data row (values of the dictionary).
+        values = ['name', 'link', 'subscribers', 'video_views', 'rankings'] # list(data_dict.values())
+        writer.writerow(values)
+    
+    api_key = "GSHEETS_API_KEY"
+    csv_file_name = "my_uploaded_data.csv"
+    parent_folder_id = "1h45IQ7HZrr-HQf6hCmLt88MGlOKLurfc" # Optional
+    print("sending csv")
+    upload_csv(api_key, csv_file_path, csv_file_name) #, parent_folder_id)
+    print("finished!")
     
     for i in range(17):
         sb.cdp.scroll_down(6)
