@@ -77,7 +77,7 @@ with SB(uc=True, test=True, ad_block=True, pls="none") as sb:
         values = ['name', 'link', 'subscribers', 'video_views', 'rankings'] # list(data_dict.values())
         writer.writerow(values)
     
-    api_key = os.environ("GSHEETS_API_KEY")
+    api_key = os.environ["GSHEETS_API_KEY"]
     csv_file_name = "my_uploaded_data.csv"
     parent_folder_id = "1h45IQ7HZrr-HQf6hCmLt88MGlOKLurfc" # Optional
     print("sending csv")
