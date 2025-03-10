@@ -7,9 +7,10 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 import os
 import json
+import tempfile
 
-def append_row_oauth_from_secret_direct(spreadsheet_id, sheet_name, row_data, secret_name='CREDENTIALS_JSON'):
-    """Appends a row to a Google Sheet using OAuth 2.0 credentials directly from a GitHub secret."""
+def append_row_oauth_from_secret_correct(spreadsheet_id, sheet_name, row_data, secret_name='CREDENTIALS_JSON'):
+    """Appends a row to a Google Sheet using OAuth 2.0 credentials from a GitHub secret."""
 
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
     creds = None
@@ -25,18 +26,30 @@ def append_row_oauth_from_secret_direct(spreadsheet_id, sheet_name, row_data, se
             credentials_json_str = os.environ.get(secret_name)
             if not credentials_json_str:
                 raise ValueError(f"GitHub secret '{secret_name}' not found.")
+
             # Load the JSON string into a dictionary.
             credentials_data = json.loads(credentials_json_str)
-            creds = Credentials.from_authorized_user_info(credentials_data, SCOPES)
+
+            # Create a temporary credentials file.
+            with tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.json') as temp_file:
+                json.dump(credentials_data, temp_file)
+                temp_file_path = temp_file.name
+
+            flow = InstalledAppFlow.from_client_secrets_file(temp_file_path, SCOPES)
+            creds = flow.run_local_server(port=0)
+
+            os.remove(temp_file_path) #delete temp file.
 
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
+
     try:
         client = gspread.authorize(creds)
         sheet = client.open_by_key(spreadsheet_id)
         worksheet = sheet.worksheet(sheet_name)
         worksheet.append_row(row_data)
         print(f"Row appended successfully to '{sheet_name}' in spreadsheet '{spreadsheet_id}'.")
+
     except Exception as e:
         print(f"An error occurred: {e}")
 
@@ -79,12 +92,9 @@ with SB(uc=True, test=True, ad_block=True, pls="none") as sb:
             print("-->  " + row.strip())
 
     spreadsheet_id = '1HShysq6qscXxQJHmf9uY3U_wKI1qgmuD54qw9EqXRsE' # Replace with your spreadsheet ID
-    sheet_name = 'Sheet1' # Replace with your sheet name
-    row_to_append = ['value1', 'value2', 'value3'] # Replace with your data
-    
-    print("sending append")
-    append_row_oauth_from_secret_direct(spreadsheet_id, sheet_name, row_to_append)
-    print("finished")
+    sheet_name = 'Sheet1'
+    row_to_append = ['value1', 'value2', 'value3']
+    append_row_oauth_from_secret_correct(spreadsheet_id, sheet_name, row_to_append)
     
     for i in range(17):
         sb.cdp.scroll_down(6)
