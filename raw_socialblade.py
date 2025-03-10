@@ -3,29 +3,22 @@ from seleniumbase import SB
 
 import requests
 import csv
+import os
+
 def upload_csv(api_key, file_path, file_name, parent_folder_id=None):
-    """Uploads a CSV file to Google Drive using an API key."""
-
-    url = "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart"
-
-    headers = {
-        "Authorization": f"Bearer {api_key}" #Technically, API keys don't use bearer tokens, but this is how google drive API expects it.
-    }
-
+    """Uploads a CSV file to Google Drive using an API key (less recommended)."""
+    url = f"https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&key={api_key}" #Added key to url
     metadata = {
         "name": file_name,
         "mimeType": "text/csv"
     }
-
     if parent_folder_id:
         metadata["parents"] = [parent_folder_id]
-
     files = {
         "metadata": (None, str(metadata), "application/json; charset=UTF-8"),
         "file": (file_name, open(file_path, "rb"), "text/csv"),
     }
-
-    response = requests.post(url, headers=headers, files=files)
+    response = requests.post(url, files=files) #Removed authorization header
 
     if response.status_code == 200:
         print("CSV file uploaded successfully.")
@@ -84,11 +77,11 @@ with SB(uc=True, test=True, ad_block=True, pls="none") as sb:
         values = ['name', 'link', 'subscribers', 'video_views', 'rankings'] # list(data_dict.values())
         writer.writerow(values)
     
-    api_key = "GSHEETS_API_KEY"
+    api_key = GSHEETS_API_KEY
     csv_file_name = "my_uploaded_data.csv"
     parent_folder_id = "1h45IQ7HZrr-HQf6hCmLt88MGlOKLurfc" # Optional
     print("sending csv")
-    upload_csv(api_key, csv_file_path, csv_file_name) #, parent_folder_id)
+    upload_csv(api_key, csv_file_path, csv_file_name, parent_folder_id)
     print("finished!")
     
     for i in range(17):
