@@ -65,18 +65,18 @@ with SB(uc=True, test=True, ad_block=True, pls="none") as sb:
     for row in rankings.split("\n"):
         if len(row.strip()) > 8:
             print("-->  " + row.strip())
-
-webhook_url = WEBHOOK_URL
-data_to_send = {
-    "name": "HELLO GITHUB",
-    "email": "jane.smith@example.com"
-}
-
-response_data = send_webhook_data(webhook_url, data_to_send)
-
-if response_data:
-  print("Returned JSON data:")
-  print(response_data)
+    
+    webhook_url = WEBHOOK_URL
+    data_to_send = {
+        "name": "HELLO GITHUB",
+        "email": "jane.smith@example.com"
+    }
+    
+    response_data = send_webhook_data(webhook_url, data_to_send)
+    
+    if response_data:
+      print("Returned JSON data:")
+      print(response_data)
     
     for i in range(17):
         sb.cdp.scroll_down(6)
