@@ -46,7 +46,7 @@ jobs:
         pip install -r requirements.txt
         pip install --upgrade pyautogui
         pip install --upgrade python-xlib
-        pip install gspread google-auth-oauthlib
+        pip install google-auth-oauthlib google-api-python-client gspread
     # - name: Lint with flake8
     #   run: |
     #     pip install flake8
