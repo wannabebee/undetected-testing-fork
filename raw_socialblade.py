@@ -71,9 +71,9 @@ with SB(uc=True, test=True, ad_block=True, pls="none") as sb:
     data_to_send = {
         "name": name,
         "link": link,
-        "subscribers" = subscribers,
-        "video_views" = video_views,
-        "rankings" = rankings
+        "subscribers" : subscribers,
+        "video_views" : video_views,
+        "rankings" : rankings
     }
     
     response_data = send_webhook_data(webhook_url, data_to_send)
