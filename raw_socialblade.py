@@ -3,6 +3,7 @@ from seleniumbase import SB
 
 import requests
 import json
+import os
 
 def send_webhook_data(url, data):
     """
@@ -66,7 +67,7 @@ with SB(uc=True, test=True, ad_block=True, pls="none") as sb:
         if len(row.strip()) > 8:
             print("-->  " + row.strip())
     
-    webhook_url = WEBHOOK_URL
+    webhook_url = os.environ["WEBHOOK_URL"]
     data_to_send = {
         "name": "HELLO GITHUB",
         "email": "jane.smith@example.com"
