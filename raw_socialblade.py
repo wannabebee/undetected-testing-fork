@@ -1,30 +1,44 @@
 """Bypass bot-detection to view SocialBlade ranks for YouTube"""
 from seleniumbase import SB
 
-import requests
-import csv
+import gspread
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 import os
+import json
 
-def upload_csv(api_key, file_path, file_name, parent_folder_id=None):
-    """Uploads a CSV file to Google Drive using an API key (less recommended)."""
-    url = f"https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&key={api_key}" #Added key to url
-    metadata = {
-        "name": file_name,
-        "mimeType": "text/csv"
-    }
-    if parent_folder_id:
-        metadata["parents"] = [parent_folder_id]
-    files = {
-        "metadata": (None, str(metadata), "application/json; charset=UTF-8"),
-        "file": (file_name, open(file_path, "rb"), "text/csv"),
-    }
-    response = requests.post(url, files=files) #Removed authorization header
+def append_row_oauth_from_secret_direct(spreadsheet_id, sheet_name, row_data, secret_name='CREDENTIALS_JSON'):
+    """Appends a row to a Google Sheet using OAuth 2.0 credentials directly from a GitHub secret."""
 
-    if response.status_code == 200:
-        print("CSV file uploaded successfully.")
-    else:
-        print(f"Error uploading CSV: {response.status_code}, {response.text}")
+    SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+    creds = None
 
+    if os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            # Get the JSON content directly from the GitHub secret.
+            credentials_json_str = os.environ.get(secret_name)
+            if not credentials_json_str:
+                raise ValueError(f"GitHub secret '{secret_name}' not found.")
+            # Load the JSON string into a dictionary.
+            credentials_data = json.loads(credentials_json_str)
+            creds = Credentials.from_authorized_user_info(credentials_data, SCOPES)
+
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
+    try:
+        client = gspread.authorize(creds)
+        sheet = client.open_by_key(spreadsheet_id)
+        worksheet = sheet.worksheet(sheet_name)
+        worksheet.append_row(row_data)
+        print(f"Row appended successfully to '{sheet_name}' in spreadsheet '{spreadsheet_id}'.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 with SB(uc=True, test=True, ad_block=True, pls="none") as sb:
     url = "https://socialblade.com/"
@@ -64,25 +78,13 @@ with SB(uc=True, test=True, ad_block=True, pls="none") as sb:
         if len(row.strip()) > 8:
             print("-->  " + row.strip())
 
-    csv_file_path = "my_data.csv"
-    print("writing csv")
-    with open(csv_file_path, 'w', newline='', encoding='utf-8') as csvfile:
-        writer = csv.writer(csvfile)
+    spreadsheet_id = '1HShysq6qscXxQJHmf9uY3U_wKI1qgmuD54qw9EqXRsE' # Replace with your spreadsheet ID
+    sheet_name = 'Sheet1' # Replace with your sheet name
+    row_to_append = ['value1', 'value2', 'value3'] # Replace with your data
     
-        # Write the header row (keys of the dictionary).
-        header = [name, link, subscribers, video_views, rankings] #list(data_dict.keys())
-        writer.writerow(header)
-    
-        # Write the data row (values of the dictionary).
-        values = ['name', 'link', 'subscribers', 'video_views', 'rankings'] # list(data_dict.values())
-        writer.writerow(values)
-    
-    api_key = os.environ["GSHEETS_API_KEY"]
-    csv_file_name = "my_uploaded_data.csv"
-    parent_folder_id = "1h45IQ7HZrr-HQf6hCmLt88MGlOKLurfc" # Optional
-    print("sending csv")
-    upload_csv(api_key, csv_file_path, csv_file_name, parent_folder_id)
-    print("finished!")
+    print("sending append")
+    append_row_oauth_from_secret_direct(spreadsheet_id, sheet_name, row_to_append)
+    print("finished")
     
     for i in range(17):
         sb.cdp.scroll_down(6)
