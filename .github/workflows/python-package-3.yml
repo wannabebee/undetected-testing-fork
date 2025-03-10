@@ -81,7 +81,7 @@ jobs:
       run: |
         python raw_socialblade.py --debug
       env:
-        GSHEETS_API_KEY: ${{ secrets.GSHEETS_API_KEY }}
+        CREDENTIALS_JSON: ${{ secrets.CREDENTIALS_JSON }}
     # - name: Run python raw_nike.py --debug
     #   run: |
     #     python raw_nike.py --debug
