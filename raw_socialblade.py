@@ -69,8 +69,11 @@ with SB(uc=True, test=True, ad_block=True, pls="none") as sb:
     
     webhook_url = os.environ["WEBHOOK_URL"]
     data_to_send = {
-        "name": "HELLO GITHUB",
-        "email": "jane.smith@example.com"
+        "name": name,
+        "link": link,
+        "subscribers" = subscribers,
+        "video_views" = video_views,
+        "rankings" = rankings
     }
     
     response_data = send_webhook_data(webhook_url, data_to_send)
