@@ -1,57 +1,32 @@
 """Bypass bot-detection to view SocialBlade ranks for YouTube"""
 from seleniumbase import SB
 
-import gspread
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-import os
+import requests
 import json
-import tempfile
 
-def append_row_oauth_from_secret_correct(spreadsheet_id, sheet_name, row_data, secret_name='CREDENTIALS_JSON'):
-    """Appends a row to a Google Sheet using OAuth 2.0 credentials from a GitHub secret."""
+def send_webhook_data(url, data):
+    """
+    Sends a POST request to a webhook URL with JSON data.
 
-    SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-    creds = None
-
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            # Get the JSON content directly from the GitHub secret.
-            credentials_json_str = os.environ.get(secret_name)
-            if not credentials_json_str:
-                raise ValueError(f"GitHub secret '{secret_name}' not found.")
-
-            # Load the JSON string into a dictionary.
-            credentials_data = json.loads(credentials_json_str)
-
-            # Create a temporary credentials file.
-            with tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.json') as temp_file:
-                json.dump(credentials_data, temp_file)
-                temp_file_path = temp_file.name
-
-            flow = InstalledAppFlow.from_client_secrets_file(temp_file_path, SCOPES)
-            creds = flow.run_local_server(port=0)
-
-            os.remove(temp_file_path) #delete temp file.
-
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
-
+    Args:
+        url: The webhook URL.
+        data: A Python dictionary containing the data to send.
+    """
     try:
-        client = gspread.authorize(creds)
-        sheet = client.open_by_key(spreadsheet_id)
-        worksheet = sheet.worksheet(sheet_name)
-        worksheet.append_row(row_data)
-        print(f"Row appended successfully to '{sheet_name}' in spreadsheet '{spreadsheet_id}'.")
+        headers = {'Content-Type': 'application/json'}
+        response = requests.post(url, data=json.dumps(data), headers=headers)
+        response.raise_for_status()  # Raises HTTPError for bad responses (4xx or 5xx)
 
-    except Exception as e:
-        print(f"An error occurred: {e}")
+        print("Webhook request successful!")
+        print("Response:", response.text) #Print response content.
+        return response.json() #return json content if possible.
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error sending webhook request: {e}")
+        return None
+    except json.JSONDecodeError as e:
+        print(f"Error decoding json response: {e}")
+        return None
 
 with SB(uc=True, test=True, ad_block=True, pls="none") as sb:
     url = "https://socialblade.com/"
@@ -91,10 +66,17 @@ with SB(uc=True, test=True, ad_block=True, pls="none") as sb:
         if len(row.strip()) > 8:
             print("-->  " + row.strip())
 
-    spreadsheet_id = '1HShysq6qscXxQJHmf9uY3U_wKI1qgmuD54qw9EqXRsE' # Replace with your spreadsheet ID
-    sheet_name = 'Sheet1'
-    row_to_append = ['value1', 'value2', 'value3']
-    append_row_oauth_from_secret_correct(spreadsheet_id, sheet_name, row_to_append)
+webhook_url = WEBHOOK_URL
+data_to_send = {
+    "name": "HELLO GITHUB",
+    "email": "jane.smith@example.com"
+}
+
+response_data = send_webhook_data(webhook_url, data_to_send)
+
+if response_data:
+  print("Returned JSON data:")
+  print(response_data)
     
     for i in range(17):
         sb.cdp.scroll_down(6)
