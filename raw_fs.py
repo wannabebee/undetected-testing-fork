@@ -66,7 +66,7 @@ with SB(uc=False, headless=True, demo=True, incognito=True, maximize=True, block
         # click "archive"
         sb.scroll_into_view("div.tabs__group a:contains('Archive')")
         sb.wait(2)
-        sb.find_element("div.tabs__group a:contains('Archive')").js_click()
+        sb.find_element("div.tabs__group a:contains('Archive')").click()
         sb.wait_for_element("#tournament-page-archiv")
     #     get present-2022 box2
         box2temp = sb.find_elements("div.archive__season a.archive__text.archive__text--clickable")
