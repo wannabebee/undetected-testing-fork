@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 
 import json
 
+webhook_url = os.environ["WEBHOOK_URL"]
 
 def send_webhook_data(url, data):
     """
@@ -28,6 +29,11 @@ def send_webhook_data(url, data):
         print(f"Error decoding json response: {e}")
         return None
 
+
+import requests
+    response = requests.get('https://2ip.ru/json/')
+    response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
+    send_webhook_data(webhook_url, response.json())
 
 with SB(uc=False, headless=True, demo=True, incognito=True, maximize=True, block_images=True, ad_block_on=True, timeout_multiplier=2) as sb:
     starturl = "https://www.flashscore.com/tennis"
