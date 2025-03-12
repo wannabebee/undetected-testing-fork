@@ -4,7 +4,6 @@ from selenium.webdriver.common.by import By
 import json
 
 
-
 def send_webhook_data(url, data):
     """
     Sends a POST request to a webhook URL with JSON data.
@@ -30,7 +29,7 @@ def send_webhook_data(url, data):
         return None
 
 
-with SB(uc=False, demo=True, incognito=True, maximize=True, block_images=True, ad_block_on=True, timeout_multiplier=2) as sb:
+with SB(uc=False, headless=True, demo=True, incognito=True, maximize=True, block_images=True, ad_block_on=True, timeout_multiplier=2) as sb:
     starturl = "https://www.flashscore.com/tennis"
     sb.open(starturl)
     sb.click("#onetrust-reject-all-handler")
