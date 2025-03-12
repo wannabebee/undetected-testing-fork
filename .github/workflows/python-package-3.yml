@@ -79,7 +79,7 @@ jobs:
         python -c "from seleniumbase import undetected; print(undetected.find_chrome_executable())"
     - name: Run python raw_fs.py --debug
       run: |
-        sbase proxy
+        # sbase proxy # 4ever young
         python raw_fs.py --debug
       env:
         WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
